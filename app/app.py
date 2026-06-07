@@ -8,6 +8,9 @@ from visualizations.attention_analysis import (
 from visualizations.streamlit_heatmap import (
     create_attention_heatmap
 )
+from visualizations.streamlit_graph import (
+    create_attention_graph
+)
 
 @st.cache_resource
 def load_extractor():
@@ -103,6 +106,11 @@ if "result" in st.session_state:
         title=f"Layer {selected_layer} | Head {selected_head}"
     )
 
+    graph_fig = create_attention_graph(
+    tokens,
+    matrix
+    )
+
     st.success(
         "Analysis Complete"
     )
@@ -172,11 +180,12 @@ if "result" in st.session_state:
         top_k=5
     )
 
-    tab1, tab2, tab3 = st.tabs(
+    tab1, tab2, tab3, tab4 = st.tabs(
         [
             "Heatmap",
             "Matrix",
-            "Token Analysis"
+            "Token Analysis",
+            "Graph"
         ]
     )
 
@@ -220,6 +229,16 @@ if "result" in st.session_state:
             st.write(
                 f"{token}: {float(score):.4f}"
             )
+
+    with tab4:
+
+        st.subheader(
+            "Attention Graph"
+        )
+
+        st.pyplot(
+            graph_fig
+        )
     
     with st.expander(
         "Show Raw Token List"
