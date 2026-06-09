@@ -38,6 +38,11 @@ selected_head = st.sidebar.selectbox(
     index=0
 )
 
+show_edge_labels = st.sidebar.checkbox(
+    "Show Edge Weights",
+    value=True
+)
+
 st.sidebar.markdown("---")
 
 st.sidebar.write(
@@ -107,8 +112,9 @@ if "result" in st.session_state:
     )
 
     graph_fig = create_attention_graph(
-    tokens,
-    matrix
+        tokens,
+        matrix,
+        show_edge_labels
     )
 
     st.success(
@@ -234,6 +240,16 @@ if "result" in st.session_state:
 
         st.subheader(
             "Attention Graph"
+        )
+
+        st.info(
+            """
+            Each token points to the token
+            receiving its strongest attention.
+
+            Thicker arrows indicate
+            stronger attention weights.
+            """
         )
 
         st.pyplot(
