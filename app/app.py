@@ -11,6 +11,13 @@ from visualizations.streamlit_heatmap import (
 from visualizations.streamlit_graph import (
     create_attention_graph
 )
+from visualizations.multi_head import (
+    create_multi_head_heatmap
+)
+from utils.export import (
+    figure_to_png_bytes,
+    matrix_to_csv_bytes
+)
 
 @st.cache_resource
 def load_extractor():
@@ -41,6 +48,13 @@ selected_head = st.sidebar.selectbox(
 show_edge_labels = st.sidebar.checkbox(
     "Show Edge Weights",
     value=True
+)
+
+num_compare_heads = st.sidebar.slider(
+    "Heads To Compare",
+    min_value=1,
+    max_value=12,
+    value=4
 )
 
 st.sidebar.markdown("---")
@@ -117,6 +131,26 @@ if "result" in st.session_state:
         show_edge_labels
     )
 
+    multi_head_fig = create_multi_head_heatmap(
+        result["outputs"],
+        tokens,
+        layer_idx,
+        num_heads=num_compare_heads
+    )
+
+    heatmap_png = figure_to_png_bytes(
+        heatmap_fig
+    )
+
+    graph_png = figure_to_png_bytes(
+        graph_fig
+    )
+
+    matrix_csv = matrix_to_csv_bytes(
+        matrix,
+        tokens
+    )
+
     st.success(
         "Analysis Complete"
     )
@@ -186,12 +220,13 @@ if "result" in st.session_state:
         top_k=5
     )
 
-    tab1, tab2, tab3, tab4 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             "Heatmap",
             "Matrix",
             "Token Analysis",
-            "Graph"
+            "Graph",
+            "Multi-Head Compare"
         ]
     )
 
@@ -209,6 +244,17 @@ if "result" in st.session_state:
             heatmap_fig
         )
 
+        st.download_button(
+            label="Download Heatmap PNG",
+            data=heatmap_png,
+            file_name=(
+                f"heatmap_layer_"
+                f"{selected_layer}_"
+                f"head_{selected_head}.png"
+            ),
+            mime="image/png"
+    )
+        
     with tab2:
 
         st.subheader(
@@ -222,6 +268,17 @@ if "result" in st.session_state:
 
         st.dataframe(
             matrix
+        )
+
+        st.download_button(
+            label="Download Matrix CSV",
+            data=matrix_csv,
+            file_name=(
+                f"matrix_layer_"
+                f"{selected_layer}_"
+                f"head_{selected_head}.csv"
+            ),
+            mime="text/csv"
         )
 
     with tab3:
@@ -255,6 +312,34 @@ if "result" in st.session_state:
         st.pyplot(
             graph_fig
         )
+
+        st.download_button(
+            label="Download Graph PNG",
+            data=graph_png,
+            file_name=(
+                f"graph_layer_"
+                f"{selected_layer}_"
+                f"head_{selected_head}.png"
+            ),
+            mime="image/png"
+        )
+    
+    with tab5:
+
+        st.subheader(
+            "Multi-Head Comparison"
+        )
+
+        st.info(
+            f"""
+            Comparing first 4 heads
+            of Layer {selected_layer}
+            """
+        )
+
+        st.pyplot(
+            multi_head_fig
+        )
     
     with st.expander(
         "Show Raw Token List"
@@ -277,3 +362,9 @@ else:
     st.info(
         "Enter text and click Analyze to inspect BERT tokenization."
     )
+
+st.sidebar.markdown("---")
+
+st.sidebar.subheader(
+    "Export"
+)
