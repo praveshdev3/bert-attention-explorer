@@ -67,14 +67,18 @@ st.sidebar.write(
     f"Head: {selected_head}"
 )
 
-st.title(
-    "BERT Attention Explorer"
-)
+st.title("BERT Attention Explorer")
 
-st.write(
+st.markdown(
     """
-    Explore attention patterns
-    inside BERT.
+    Explore how BERT distributes attention across tokens.
+
+    Features:
+    - Attention Heatmaps
+    - Token-Level Analysis
+    - Attention Graphs
+    - Multi-Head Comparison
+    - Export Visualizations
     """
 )
 
@@ -99,6 +103,22 @@ layer_idx = selected_layer - 1
 head_idx = selected_head - 1
 
 if analyze_button:
+
+    if not text.strip():
+
+        st.warning(
+            "Please enter some text."
+        )
+
+        st.stop()
+
+    if len(text.split()) > 100:
+
+        st.warning(
+            "Please keep input under 100 words."
+        )
+
+        st.stop()
 
     with st.spinner("Running BERT analysis..."):
 
@@ -332,7 +352,7 @@ if "result" in st.session_state:
 
         st.info(
             f"""
-            Comparing first 4 heads
+            Comparing first {num_compare_heads} heads
             of Layer {selected_layer}
             """
         )
@@ -363,8 +383,11 @@ else:
         "Enter text and click Analyze to inspect BERT tokenization."
     )
 
-st.sidebar.markdown("---")
+st.markdown("---")
 
-st.sidebar.subheader(
-    "Export"
+st.caption(
+    """
+    Built using Streamlit, Hugging Face Transformers,
+    Matplotlib, NetworkX and BERT.
+    """
 )
